@@ -32,3 +32,7 @@ node test/e2e.mjs   # 需要 Playwright + Chromium
 - `node tools/store-assets.mjs`：重新生成 `store/screenshots/`（1280×800，中英文 × 浅色 / 深色 / 搜索）和 `store/promo/`（440×280 小宣传图、1400×560 大宣传图），帖子全是虚构的
 - `store/listing.md`：商店描述（中英文）和隐私表单要填的每一段文字
 - `store/privacy-policy.html`：隐私政策页面，由 GitHub Pages 发布在 https://yetone.github.io/rewind-for-x/store/privacy-policy.html
+
+## License
+
+[MIT](LICENSE)
