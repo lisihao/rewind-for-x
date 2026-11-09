@@ -10,5 +10,12 @@
   "noMatch": { "message": "No matches" },
   "reposted": { "message": "reposted" },
   "today": { "message": "Today" },
-  "yesterday": { "message": "Yesterday" }
+  "yesterday": { "message": "Yesterday" },
+  "filter": { "message": "Filter" },
+  "filterAll": { "message": "All" },
+  "filterImages": { "message": "Images" },
+  "filterVideos": { "message": "Videos" },
+  "filterQuotes": { "message": "Quotes" },
+  "filterReposts": { "message": "Reposts" },
+  "showAll": { "message": "Show all" }
 }

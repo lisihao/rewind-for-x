@@ -288,6 +288,16 @@
     .search:focus + .lead { color: var(--accent); }
     .search::placeholder { color: var(--muted); }
     .search::-webkit-search-cancel-button { display: none; }
+    .chips { display: flex; gap: 8px; margin: 12px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: none; height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--edge);
+      font-size: 14px; line-height: 30px; font-weight: 700; color: var(--fg);
+      transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+    }
+    .chip[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+    .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @media (hover: hover) and (pointer: fine) { .chip[aria-pressed="false"]:hover { background: var(--hover); } }
 
     .list { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
     .sep {
@@ -338,7 +348,23 @@
     .note { padding: 56px 40px; text-align: center; color: var(--muted); }
     .note svg { width: 40px; height: 40px; margin: 0 auto 12px; opacity: .6; }
     .note p { margin: 0; }
+    .note .reset {
+      margin-top: 16px; height: 36px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--edge);
+      color: var(--fg); font-size: 14px; font-weight: 700;
+    }
   `;
+
+  // Drawer filters: [id, message key, test]. A video's poster is a
+  // video_thumb (GIFs too); a link card's picture is not an image of the post.
+  const isVideo = (src) => /video_thumb/.test(src);
+  const isImage = (src) => !isVideo(src) && !/\/card_img\//.test(src);
+  const FILTERS = [
+    ['all', 'filterAll', () => true],
+    ['images', 'filterImages', (i) => i.media.some(isImage)],
+    ['videos', 'filterVideos', (i) => i.media.some(isVideo)],
+    ['quotes', 'filterQuotes', (i) => !!i.quote],
+    ['reposts', 'filterReposts', (i) => !!i.context],
+  ];
 
   const host = document.createElement('div');
   host.id = 'x-rewind';
@@ -355,6 +381,8 @@
         <div class="field">
           <input class="search" type="search" placeholder="${t('search')}" autocomplete="off" spellcheck="false">${ICON_SEARCH}
         </div>
+        <div class="chips" role="group" aria-label="${t('filter')}">${FILTERS.map(([id, key]) =>
+          `<button class="chip" data-f="${id}" aria-pressed="false">${t(key)}</button>`).join('')}</div>
       </header>
       <div class="list"></div>
     </aside>`;
@@ -365,6 +393,14 @@
   const search = $('.search');
   const count = $('.count');
   const clearBtn = $('.clear');
+  const chips = $('.chips');
+  let filter = 'all';
+  function setFilter(id, save) {
+    if (!FILTERS.some(([f]) => f === id)) id = 'all';
+    filter = id;
+    for (const c of chips.children) c.setAttribute('aria-pressed', String(c.dataset.f === id));
+    if (save && alive()) chrome.storage.local.set({ filter: id }).catch(() => {});
+  }
 
   function h(tag, props, ...kids) {
     const el = document.createElement(tag);
@@ -409,7 +445,7 @@
       ? h('div', { class: `media n${it.media.length}` },
           ...it.media.map((src) => h('div', { class: 'cell' },
             h('img', { src, loading: 'lazy', alt: '', referrerpolicy: 'no-referrer' }),
-            /video_thumb/.test(src) ? h('div', { class: 'play', html: ICON_PLAY }) : null)))
+            isVideo(src) ? h('div', { class: 'play', html: ICON_PLAY }) : null)))
       : null;
     const when = Date.parse(it.postedAt);
     return h('a', { class: 'card', href: it.url, target: '_blank', rel: 'noopener' },
@@ -432,6 +468,7 @@
   function render() {
     const q = search.value.trim().toLowerCase();
     shown = sorted();
+    if (filter !== 'all') shown = shown.filter(FILTERS.find(([f]) => f === filter)[2]);
     if (q) {
       shown = shown.filter((i) =>
         `${i.name}\n${i.handle}\n${i.text}\n${i.context}\n${i.quote ? `${i.quote.name}\n${i.quote.text}` : ''}`
@@ -453,7 +490,8 @@
     }
     if (!shown.length) {
       frag.append(h('div', { class: 'note', html: items.size ? ICON_SEARCH.replace(' class="lead"', '') : ICON_REWIND },
-        h('p', { text: items.size ? t('noMatch') : t('empty') })));
+        h('p', { text: items.size ? t('noMatch') : t('empty') }),
+        items.size && filter !== 'all' ? h('button', { class: 'reset', text: t('showAll') }) : null));
     }
     list.replaceChildren(frag);
     if (top > 0) list.scrollTop = top + (list.scrollHeight - before);
@@ -509,6 +547,20 @@
   search.addEventListener('input', () => {
     pages = 1;
     list.scrollTop = 0;
+    render();
+  });
+  chips.addEventListener('click', (e) => {
+    const c = e.target.closest('.chip');
+    if (!c || c.dataset.f === filter) return;
+    setFilter(c.dataset.f, true);
+    pages = 1;
+    list.scrollTop = 0;
+    render();
+  });
+  list.addEventListener('click', (e) => {
+    if (!e.target.closest('.reset')) return;
+    search.value = '';
+    setFilter('all', true);
     render();
   });
   list.addEventListener('scroll', () => {
@@ -572,8 +624,9 @@
     if (merge(next) || !next.length) open && scheduleRender();
   });
 
-  chrome.storage.local.get('items').then(({ items: saved }) => {
+  chrome.storage.local.get(['items', 'filter']).then(({ items: saved, filter: f }) => {
     merge(saved);
+    setFilter(f || 'all');
     document.documentElement.append(host);
     lastPath = location.pathname;
     fab.hidden = !isHome();

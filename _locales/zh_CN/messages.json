@@ -10,5 +10,12 @@
   "noMatch": { "message": "没有匹配的推文" },
   "reposted": { "message": "转帖了" },
   "today": { "message": "今天" },
-  "yesterday": { "message": "昨天" }
+  "yesterday": { "message": "昨天" },
+  "filter": { "message": "筛选" },
+  "filterAll": { "message": "全部" },
+  "filterImages": { "message": "图片" },
+  "filterVideos": { "message": "视频" },
+  "filterQuotes": { "message": "引用" },
+  "filterReposts": { "message": "转帖" },
+  "showAll": { "message": "显示全部" }
 }
