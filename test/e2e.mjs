@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 
 // require() so a global install found through NODE_PATH works too.
 const { chromium } = createRequire(import.meta.url)('playwright');
-const ext = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ext = path.resolve(process.env.EXTENSION_PATH || path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const shots = process.env.SHOTS || path.join(ext, 'test', 'out');
 
 const pic = (c) =>
