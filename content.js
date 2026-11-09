@@ -260,7 +260,7 @@
       .panel.open { opacity: 1; transition: opacity .18s ease, visibility 0s; }
     }
 
-    header { padding: 0 16px 12px; border-bottom: 1px solid var(--line); }
+    header { padding: env(safe-area-inset-top, 0px) 16px 12px; border-bottom: 1px solid var(--line); }
     .row { display: flex; align-items: center; gap: 4px; height: 53px; }
     h2 { margin: 0; font-size: 20px; line-height: 24px; font-weight: 800; }
     .count { margin-left: 6px; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
@@ -299,7 +299,7 @@
     .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     @media (hover: hover) and (pointer: fine) { .chip[aria-pressed="false"]:hover { background: var(--hover); } }
 
-    .list { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+    .list { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-bottom: env(safe-area-inset-bottom, 0px); }
     .sep {
       position: sticky; top: 0; z-index: 1; padding: 10px 16px 8px;
       font-size: 13px; line-height: 16px; font-weight: 700; color: var(--muted);
@@ -348,6 +348,20 @@
     .note { padding: 56px 40px; text-align: center; color: var(--muted); }
     .note svg { width: 40px; height: 40px; margin: 0 auto 12px; opacity: .6; }
     .note p { margin: 0; }
+
+    /* Phones: the drawer covers the screen, controls are finger-sized, and
+       the search box is 16px so iOS doesn't zoom in on focus. */
+    @media (max-width: 500px) {
+      .panel { border-left: 0; box-shadow: none; }
+    }
+    @media (pointer: coarse) {
+      .icon { height: 44px; min-width: 44px; }
+      .search { height: 44px; font-size: 16px; }
+      .field .lead { top: 13px; }
+      .chip { height: 36px; line-height: 34px; }
+      .fab { -webkit-tap-highlight-color: transparent; }
+      .card, .chip, .icon, .reset { -webkit-tap-highlight-color: transparent; }
+    }
     .note .reset {
       margin-top: 16px; height: 36px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--edge);
       color: var(--fg); font-size: 14px; font-weight: 700;
@@ -510,7 +524,9 @@
 
   // Stack the button on top of X's own floating buttons (Grok, chat) so it
   // never covers them; with none on screen it takes the corner.
-  const DOCK = '[data-testid="GrokDrawerHeader"], [data-testid="chat-drawer-main"]';
+  // On a phone X has a tab bar along the bottom and a compose button above it.
+  const DOCK = '[data-testid="GrokDrawerHeader"], [data-testid="chat-drawer-main"], [data-testid^="FloatingActionButtons"]';
+  const TAB_BAR = '[data-testid="BottomBar"]';
   function place() {
     let top = Infinity;
     let right = 0;
@@ -521,7 +537,11 @@
     }
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
-    const pos = top === Infinity ? ['20px', '20px'] : [`${Math.round(vw - right)}px`, `${Math.round(vh - top + 12)}px`];
+    let pos = top === Infinity ? ['20px', '20px'] : [`${Math.round(vw - right)}px`, `${Math.round(vh - top + 12)}px`];
+    if (top === Infinity) {
+      const bar = document.querySelector(TAB_BAR)?.getBoundingClientRect();
+      if (bar?.height && bar.top > vh / 2) pos = ['16px', `${Math.round(vh - bar.top + 16)}px`];
+    }
     if (fab.style.right !== pos[0]) fab.style.right = pos[0];
     if (fab.style.bottom !== pos[1]) fab.style.bottom = pos[1];
   }
