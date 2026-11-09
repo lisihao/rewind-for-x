@@ -1,0 +1,14 @@
+{
+  "name": { "message": "Rewind for X 推文回看" },
+  "description": { "message": "回看 X 首页推荐里刚刚刷过、被新内容顶掉的推文。非 X 官方产品。" },
+  "title": { "message": "刚刚看过" },
+  "search": { "message": "搜索" },
+  "clear": { "message": "清空" },
+  "confirmClear": { "message": "再点一次清空" },
+  "close": { "message": "关闭" },
+  "empty": { "message": "在首页刷过的推文会出现在这里。" },
+  "noMatch": { "message": "没有匹配的推文" },
+  "reposted": { "message": "转帖了" },
+  "today": { "message": "今天" },
+  "yesterday": { "message": "昨天" }
+}

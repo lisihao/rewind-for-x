@@ -1,0 +1,14 @@
+{
+  "name": { "message": "Rewind for X" },
+  "description": { "message": "Look back at the posts that just scrolled past or got replaced on your X home timeline. Not affiliated with X Corp." },
+  "title": { "message": "Recently seen" },
+  "search": { "message": "Search" },
+  "clear": { "message": "Clear" },
+  "confirmClear": { "message": "Click again to clear" },
+  "close": { "message": "Close" },
+  "empty": { "message": "Posts you scroll past on Home show up here." },
+  "noMatch": { "message": "No matches" },
+  "reposted": { "message": "reposted" },
+  "today": { "message": "Today" },
+  "yesterday": { "message": "Yesterday" }
+}
